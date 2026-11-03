@@ -1,0 +1,11 @@
+{
+  "name": "senate-map",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local 2026 US Senate race map comparing forecaster ratings and betting odds",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  },
+  "engines": { "node": ">=18" }
+}

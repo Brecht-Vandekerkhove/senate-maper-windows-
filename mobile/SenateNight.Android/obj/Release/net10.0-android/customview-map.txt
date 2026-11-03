@@ -1,0 +1,4 @@
+path;obj\Release\net10.0-android\res\drawable\ic_stat.xml
+path;obj\Release\net10.0-android\res\drawable\icon.xml
+vector;obj\Release\net10.0-android\res\drawable\ic_stat.xml
+vector;obj\Release\net10.0-android\res\drawable\icon.xml

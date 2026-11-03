@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "BfmevBqw8RY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\BrechtVandekerkhove\\senate-map\\mobile\\SenateNight.Android\\SenateNight.Android.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\BrechtVandekerkhove\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.14\\microsoft.net.illink.tasks.10.0.14.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Senate Night</title>
+<style>
+/* Layout: fixed score on top, then a Races or Map view filling the rest of the phone. */
+:root {
+  --bg: #eef0f4; --surface: #fff; --ink: #171b24; --ink2: #596173; --line: #d5d9e1;
+  --dem: #1f4e9e; --rep: #a32a20; --ind: #3f6b54; --held-d: #a9b8d2; --held-r: #d6b1ab; --pending: #dfe2e8; --warn: #8a5a00;
+  --lead-d: #a9c2ea; --lead-r: #eeb1a8; --lead-i: #b5d1c1; --closed: #8e94a2; --open: #c6cad3; --not-up: #e7e9ee;
+  --on-strong: #fff; --on-weak: #171b24;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11141a; --surface: #1a1e27; --ink: #eef0f4; --ink2: #a3aab8; --line: #333946;
+    --dem: #5c93f0; --rep: #ef6a5c; --ind: #6fa088; --held-d: #39475f; --held-r: #5a3f3c; --pending: #262b35; --warn: #e8c068;
+    --lead-d: #2c4f8d; --lead-r: #7d3c35; --lead-i: #37594a; --closed: #6b7384; --open: #3d4452; --not-up: #1c2028;
+    --on-strong: #11141a; --on-weak: #eef0f4;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.35 Roboto, system-ui, sans-serif; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+.top { background: var(--surface); padding: 10px 14px; display: grid; gap: 7px; border-bottom: 1px solid var(--line); }
+.score { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; }
+.score strong { font-size: 38px; line-height: 1; font-weight: 600; }
+.d { color: var(--dem); } .r { color: var(--rep); }
+.mid { text-align: center; font-size: 12px; color: var(--ink2); }
+.bar { position: relative; display: flex; gap: 1px; height: 12px; background: var(--pending); }
+.bar i { display: block; height: 100%; }
+.bar b { position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 2px solid var(--ink); }
+.house { display: grid; grid-template-columns: auto auto 1fr auto auto; gap: 7px; align-items: center; font-size: 12px; color: var(--ink2); }
+.house strong { font-size: 14px; font-weight: 600; }
+.house .bar { height: 8px; }
+.status { font-size: 12px; color: var(--ink2); }
+.status.problem { color: var(--warn); }
+
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabs button { padding: 9px; font-size: 14px; font-weight: 500; color: var(--ink2); border-bottom: 2px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+
+main { flex: 1; min-height: 0; overflow-y: auto; }
+.heading { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink2); padding: 12px 14px 4px; }
+.race { display: block; width: 100%; text-align: left; padding: 8px 14px 8px 12px; border-left: 4px solid var(--line); border-bottom: 1px solid var(--line); text-decoration: none; }
+.race .line1 { display: flex; justify-content: space-between; gap: 10px; }
+.race .name { font-weight: 600; }
+.race .right { color: var(--ink2); font-size: 13px; white-space: nowrap; }
+.race .line2 { font-size: 13px; display: flex; flex-wrap: wrap; gap: 0 12px; }
+
+.settings { padding: 14px; display: grid; gap: 10px; font-size: 13px; color: var(--ink2); }
+.action { justify-self: start; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 4px; padding: 8px 12px; }
+
+#map { width: 100%; height: auto; display: block; padding: 6px 4px 0; }
+.shape { stroke: var(--bg); stroke-width: .8; }
+.shape.sel, .tile.sel { stroke: var(--ink); stroke-width: 2.4; }
+.lbl { font: 600 15px Roboto, sans-serif; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 3px 10px; padding: 6px 12px; font-size: 11px; color: var(--ink2); }
+.legend i { display: inline-block; width: 11px; height: 11px; margin-right: 4px; vertical-align: -1px; border: 1px solid var(--line); }
+.detail { padding: 8px 14px 18px; display: grid; gap: 6px; }
+.detail h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.detail .sum { font-size: 13px; color: var(--ink2); }
+.cand { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 14px; }
+.cand .num { color: var(--ink2); font-size: 13px; }
+.track { grid-column: 1 / -1; height: 5px; background: var(--pending); }
+.track i { display: block; height: 100%; }
+.open-link { font-size: 13px; color: var(--ink2); }
+</style>
+</head>
+<body>
+<section class="top">
+  <div class="score">
+    <strong id="d" class="d">–</strong>
+    <div class="mid" id="mid">Loading results…</div>
+    <strong id="r" class="r">–</strong>
+  </div>
+  <div class="bar" id="bar"><b></b></div>
+  <div class="house" id="house"></div>
+  <div class="status" id="status"></div>
+</section>
+<nav class="tabs" role="tablist">
+  <button id="tab-races" role="tab" aria-selected="true">Races</button>
+  <button id="tab-map" role="tab" aria-selected="false">Map</button>
+</nav>
+<main id="main"></main>
+<script src="states.js"></script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const TILES = ['NH', 'MA', 'RI', 'NJ', 'DE'];
+const RATING = { tossup: 'Toss-up', 'lean-dem': 'Lean D', 'lean-rep': 'Lean R', 'likely-dem': 'Likely D', 'likely-rep': 'Likely R', 'solid-dem': 'Solid D', 'solid-rep': 'Solid R' };
+const RANK = { tossup: 0, 'lean-dem': 1, 'lean-rep': 1, 'likely-dem': 2, 'likely-rep': 2 };
+const rank = (r) => RANK[r.rating] ?? 3;
+const lead = (r) => (r.candidates.length > 1 ? r.candidates[0].share - r.candidates[1].share : 100);
+const partyVar = (p) => (p === 'D' ? 'var(--dem)' : p === 'R' ? 'var(--rep)' : 'var(--ind)');
+const http = (u) => (u && u.startsWith('https://') ? u : null);
+
+let state = null;
+let settings = { running: true, batteryOk: true };
+let tab = 'races';
+let selected = null;
+let mapBuilt = false;
+
+function fill(r) {
+  const winner = r.candidates.find((c) => c.id === r.winner);
+  if (winner) return partyVar(winner.party);
+  if ((r.status === 'Counting' || r.status === 'Runoff') && r.candidates[0]) {
+    const p = r.candidates[0].party;
+    return p === 'D' ? 'var(--lead-d)' : p === 'R' ? 'var(--lead-r)' : 'var(--lead-i)';
+  }
+  return r.status === 'AwaitingVotes' ? 'var(--closed)' : 'var(--open)';
+}
+
+function labelInk(r) {
+  return r.winner ? 'var(--on-strong)' : r.status === 'AwaitingVotes' ? '#fff' : 'var(--on-weak)';
+}
+
+function renderTop() {
+  $('status').className = 'status' + (state.problem ? ' problem' : '');
+  const b = state.board;
+  if (!b) {
+    $('status').textContent = state.problem || 'Loading results…';
+    return;
+  }
+  $('d').textContent = b.d;
+  $('r').textContent = b.r;
+  const ind = b.i > 0 ? ` · ${b.i} independent` : '';
+  $('mid').innerHTML = `${b.called} of ${b.races.length} called${esc(ind)}<br>D needs ${b.toWinD}, R needs ${b.toWinR}`;
+
+  const wonD = b.d - b.heldD, wonR = b.r - b.heldR, wonI = b.i - b.heldI;
+  const pending = b.races.length - wonD - wonR - wonI;
+  const parts = [[b.heldD, 'var(--held-d)'], [wonD, 'var(--dem)'], [b.heldI + wonI, 'var(--ind)'], [pending, 'var(--pending)'], [wonR, 'var(--rep)'], [b.heldR, 'var(--held-r)']];
+  $('bar').innerHTML = parts.filter(([n]) => n > 0).map(([n, c]) => `<i style="flex:${n} ${n} 0;background:${c}"></i>`).join('') + '<b></b>';
+
+  const h = state.house;
+  $('house').innerHTML = h
+    ? `<span>House</span><strong class="d">${h.d}</strong><div class="bar"><i style="width:${100 * h.d / h.total}%;background:var(--dem)"></i><i style="width:${100 * h.i / h.total}%;background:var(--ind)"></i><i style="position:absolute;right:0;width:${100 * h.r / h.total}%;background:var(--rep)"></i><b></b></div><strong class="r">${h.r}</strong><span>${h.toWin} to win</span>`
+    : '<span>House: loading…</span>';
+
+  const next = b.races.filter((r) => r.status === 'Upcoming' && r.close).sort((x, y) => x.closeAt - y.closeAt);
+  let line = `Updated ${esc(state.updated)}.`;
+  if (next.length) {
+    const group = next.filter((r) => r.closeAt === next[0].closeAt).map((r) => r.postal);
+    line = `Next polls close ${next[0].close}: ${group.slice(0, 7).join(', ')}${group.length > 7 ? ` +${group.length - 7}` : ''}. ` + line;
+  }
+  $('status').textContent = state.problem ? `${state.problem} ${line}` : line;
+}
+
+function row(r) {
+  const winner = r.candidates.find((c) => c.id === r.winner);
+  const leader = winner || (r.status === 'Counting' ? r.candidates[0] : null);
+  const right = r.status === 'Upcoming' ? `closes ${esc(r.close)}` : r.status === 'AwaitingVotes' ? 'no votes yet' : r.status === 'Runoff' ? 'runoff' : `${Math.round(r.pct)}% in`;
+  let shown = r.candidates.slice(0, 2);
+  if (winner && !shown.includes(winner)) shown = [shown[0], winner];
+  const names = shown.map((c) => `<span style="color:${partyVar(c.party)}">${esc(c.name)} (${esc(c.tag)})${r.votes > 0 ? ` ${c.share.toFixed(1)}%` : ''}</span>`).join('');
+  const title = `${r.status === 'Called' ? '✓ ' : ''}${esc(r.state)}${r.special ? ' (special)' : ''}${r.ranked ? ' (ranked)' : ''}`;
+  return `<button class="race" data-select="${esc(r.id)}" style="border-left-color:${leader ? partyVar(leader.party) : 'var(--line)'}"><div class="line1"><span class="name">${title}</span><span class="right">${right}</span></div><div class="line2">${names}</div></button>`;
+}
+
+function renderRaces() {
+  const rs = state.board.races;
+  const groups = [
+    ['Counting, closest first', rs.filter((r) => r.status === 'Counting').sort((a, b) => lead(a) - lead(b))],
+    ['Runoff', rs.filter((r) => r.status === 'Runoff')],
+    ['Polls closed, no votes yet', rs.filter((r) => r.status === 'AwaitingVotes').sort((a, b) => rank(a) - rank(b))],
+    ['Polls still open', rs.filter((r) => r.status === 'Upcoming').sort((a, b) => a.closeAt - b.closeAt || rank(a) - rank(b))],
+    ['Called, newest first', rs.filter((r) => r.status === 'Called').sort((a, b) => b.wonAt - a.wonAt)],
+  ];
+  const list = groups.filter(([, g]) => g.length).map(([h, g]) => `<div class="heading">${h}</div>${g.map(row).join('')}`).join('');
+  const battery = settings.batteryOk ? '' : '<p style="margin:0">Your phone may stop updates to save battery, so you could miss alerts.</p><a class="action" href="senate://battery">Allow background updates</a>';
+  const toggle = settings.running
+    ? '<p style="margin:0">Updates run until you stop them, including with this screen closed. They use extra battery.</p><a class="action" href="senate://stop">Stop updates</a>'
+    : '<p style="margin:0">Updates are stopped. This screen is not refreshing.</p><a class="action" href="senate://start">Start updates</a>';
+  $('main').innerHTML = `${list}<div class="settings">${battery}${toggle}</div>`;
+}
+
+function buildMap() {
+  const names = new Map(state.board.races.map((r) => [r.state, r]));
+  const shapes = window.SHAPES.map((s) => {
+    const r = names.get(s.name);
+    if (!r) return `<path class="shape" d="${s.d}" fill="var(--not-up)"/>`;
+    const label = TILES.includes(r.postal) ? '' : `<text class="lbl" data-label="${r.id}" x="${s.x}" y="${s.y}"></text>`;
+    return `<path class="shape" data-select="${r.id}" d="${s.d}"/>${label}`;
+  }).join('');
+  const tiles = TILES.map((code, i) => {
+    const r = state.board.races.find((x) => x.postal === code);
+    if (!r) return '';
+    const y = 200 + i * 44;
+    return `<rect class="tile" data-select="${r.id}" x="925" y="${y}" width="60" height="38" rx="3"/><text class="lbl" data-label="${r.id}" x="955" y="${y + 19}"></text>`;
+  }).join('');
+  return `<svg id="map" viewBox="0 0 990 610">${shapes}${tiles}</svg>`;
+}
+
+function renderMap() {
+  const b = state.board;
+  if (!mapBuilt) {
+    const keys = [['var(--dem)', 'Won D'], ['var(--lead-d)', 'Leading D'], ['var(--lead-r)', 'Leading R'], ['var(--rep)', 'Won R'], ['var(--ind)', 'Won Ind.'], ['var(--closed)', 'Closed, no votes'], ['var(--open)', 'Polls open'], ['var(--not-up)', 'Not up']];
+    $('main').innerHTML = `${buildMap()}<div class="legend">${keys.map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join('')}</div><div class="detail" id="detail"></div>`;
+    mapBuilt = true;
+  }
+  const byId = new Map(b.races.map((r) => [r.id, r]));
+  document.querySelectorAll('[data-select]').forEach((el) => {
+    const r = byId.get(el.dataset.select);
+    el.setAttribute('fill', fill(r));
+    el.classList.toggle('sel', r.id === selected);
+  });
+  document.querySelectorAll('[data-label]').forEach((el) => {
+    const r = byId.get(el.dataset.label);
+    el.textContent = r.postal + (r.status === 'Called' ? '✓' : '');
+    el.setAttribute('fill', labelInk(r));
+  });
+  renderDetail();
+}
+
+function defaultRace() {
+  const rs = state.board.races;
+  return rs.filter((r) => r.status === 'Counting').sort((a, b) => lead(a) - lead(b))[0]
+    || rs.filter((r) => r.status !== 'Called').sort((a, b) => rank(a) - rank(b) || a.closeAt - b.closeAt)[0]
+    || rs[0];
+}
+
+function renderDetail() {
+  const r = state.board.races.find((x) => x.id === selected) || defaultRace();
+  if (!r) return;
+  const rating = RATING[r.rating] ? `NYT rating: ${RATING[r.rating]}` : 'No NYT rating';
+  const votes = `${Math.round(r.pct)}% counted · ${r.votes.toLocaleString()} votes`;
+  const sum = {
+    Called: `Called · ${votes}${r.flipped ? ' · seat changes party' : ''}`,
+    Counting: votes,
+    Runoff: `Goes to a runoff · ${Math.round(r.pct)}% counted`,
+    AwaitingVotes: `Polls closed, no votes yet · ${rating}`,
+    Upcoming: `Polls close ${esc(r.close)} your time · ${rating}`,
+  }[r.status];
+  let shown = r.candidates.slice(0, 3);
+  const winner = r.candidates.find((c) => c.id === r.winner);
+  if (winner && !shown.includes(winner)) shown = [...shown.slice(0, 2), winner];
+  const cands = shown.map((c) => `<div class="cand"><span>${c.id === r.winner ? '✓ ' : ''}${esc(c.name)} (${esc(c.tag)})</span>${r.votes > 0 ? `<span class="num">${c.votes.toLocaleString()} · ${c.share.toFixed(1)}%</span><div class="track"><i style="width:${c.share}%;background:${partyVar(c.party)}"></i></div>` : ''}</div>`).join('');
+  const note = r.ranked ? '<div class="sum">Ranked-choice race: first-count shares may not show the winner.</div>' : '';
+  const link = http(r.url) ? `<a class="open-link" href="${esc(r.url)}">Open on nytimes.com</a>` : '';
+  $('detail').innerHTML = `<h2>${esc(r.state)}${r.special ? ' (special)' : ''}</h2><div class="sum">${sum}</div>${cands}${note}${link}`;
+}
+
+function renderMain() {
+  if (!state || !state.board) return;
+  if (tab === 'races') { mapBuilt = false; renderRaces(); } else renderMap();
+}
+
+function setTab(next) {
+  if (tab === next) return;
+  tab = next;
+  mapBuilt = false;
+  $('tab-races').setAttribute('aria-selected', tab === 'races');
+  $('tab-map').setAttribute('aria-selected', tab === 'map');
+  renderMain();
+  $('main').scrollTop = 0;
+}
+
+window.render = (next, nextSettings) => {
+  state = next;
+  settings = nextSettings;
+  renderTop();
+  renderMain();
+};
+
+$('tab-races').addEventListener('click', () => setTab('races'));
+$('tab-map').addEventListener('click', () => setTab('map'));
+$('main').addEventListener('click', (e) => {
+  const el = e.target.closest('[data-select]');
+  if (!el) return;
+  selected = el.dataset.select;
+  if (tab === 'races') setTab('map');
+  else renderMap();
+});
+</script>
+</body>
+</html>

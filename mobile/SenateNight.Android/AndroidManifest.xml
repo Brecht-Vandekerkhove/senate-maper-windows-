@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+  <application android:label="Senate Night" android:icon="@drawable/icon" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+    <!-- specialUse has no time limit, where dataSync stops after 6 hours on Android 15. Election night runs longer. -->
+    <service
+        android:name="senatenight.ScoreService"
+        android:exported="false"
+        android:foregroundServiceType="specialUse">
+      <property
+          android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+          android:value="Live election results shown in an ongoing notification" />
+    </service>
+  </application>
+</manifest>

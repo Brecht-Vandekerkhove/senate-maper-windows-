@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SenateNight</RootNamespace>
+    <ApplicationId>be.brecht.senatenight</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <!-- Sideloaded, so one APK covers phones and the x64 test emulator. -->
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <AndroidKeyStore>false</AndroidKeyStore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\widget\SenateNight\Feed.cs" Link="Shared\Feed.cs" />
+    <Compile Include="..\..\widget\SenateNight\FeedClient.cs" Link="Shared\FeedClient.cs" />
+  </ItemGroup>
+
+</Project>

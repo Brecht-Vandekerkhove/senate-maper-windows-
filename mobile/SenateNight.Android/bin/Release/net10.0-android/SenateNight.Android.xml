@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SenateNight.Android</name>
+    </assembly>
+    <members>
+        <member name="T:SenateNight.LiveState">
+            <summary>The latest results, written by the service and read by the screen.</summary>
+        </member>
+        <member name="M:SenateNight.LiveState.ToJson">
+            <summary>Written by hand because release builds trim the code reflection-based serializing needs.</summary>
+        </member>
+        <member name="M:SenateNight.MainActivity.HandleCommand(System.String)">
+            <summary>The page asks for phone actions by navigating to senate:// addresses.</summary>
+        </member>
+        <member name="T:SenateNight.ScoreService">
+            <summary>Keeps polling with the app closed. Holds the ongoing score notification and sends the alerts.</summary>
+        </member>
+        <member name="M:SenateNight.ScoreService.CreateClient">
+            <summary>Replays saved files when they're placed in the app's folder, for testing without a live election.</summary>
+        </member>
+        <member name="T:SenateNight.Candidate">
+            <param name="Party">D, R, I or O (a third party) as listed on the ballot.</param>
+            <param name="Side">The side a seat counts for: D, R, or I for anyone outside them who has no caucus.</param>
+        </member>
+        <member name="M:SenateNight.Candidate.#ctor(System.String,System.String,System.Char,System.Char,System.Int64,System.Double)">
+            <param name="Party">D, R, I or O (a third party) as listed on the ballot.</param>
+            <param name="Side">The side a seat counts for: D, R, or I for anyone outside them who has no caucus.</param>
+        </member>
+        <member name="P:SenateNight.Candidate.Party">
+            <summary>D, R, I or O (a third party) as listed on the ballot.</summary>
+        </member>
+        <member name="P:SenateNight.Candidate.Side">
+            <summary>The side a seat counts for: D, R, or I for anyone outside them who has no caucus.</summary>
+        </member>
+        <member name="M:SenateNight.Feed.ParseHouse(System.String)">
+            <summary>Counts called House seats. The file also has a nationwide entry that isn't a seat.</summary>
+        </member>
+        <member name="M:SenateNight.Feed.Parse(System.String,System.String,System.DateTimeOffset)">
+            <summary>Reads the results page file, plus the county feed the same page polls for live data.</summary>
+            <remarks>Both carry the same race records, so each race uses whichever copy is newer.</remarks>
+        </member>
+        <member name="M:SenateNight.Alerts.DiffHouse(SenateNight.HouseTally,SenateNight.HouseTally)">
+            <summary>House calls are too many to announce one by one, so only control gets an alert.</summary>
+        </member>
+        <member name="M:SenateNight.Alerts.Diff(SenateNight.Board,SenateNight.Board)">
+            <summary>What changed between two refreshes. The first load never alerts, so a restart stays quiet.</summary>
+        </member>
+        <member name="T:SenateNight.FeedClient">
+            <summary>Downloads the NYT files, or reads local ones when replaying with --source.</summary>
+        </member>
+        <member name="M:SenateNight.FeedClient.FetchHouseAsync(System.Threading.CancellationToken)">
+            <summary>Null when replaying Senate data with no House file to go with it.</summary>
+        </member>
+        <member name="T:SenateNight.Resource">
+            <summary>
+            Android Resource Designer class.
+            Exposes the Android Resource designer assembly into the project Namespace.
+            </summary>
+        </member>
+    </members>
+</doc>
